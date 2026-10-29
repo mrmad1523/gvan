@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Gvan"
+description = "A mobile-first companion web app with a home dashboard linking to Identity, How to Use, Rules, Weekly Challenge, Wallet, and Contact Us. Uses demo data only and has no payment integrations."
+version = "1.0.0"
+id = "artifacts/gvan"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18416
+
+[services.development]
+run = "pnpm --filter @workspace/gvan run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/gvan", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/gvan/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18416"
+BASE_PATH = "/"
