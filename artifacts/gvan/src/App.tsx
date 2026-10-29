@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { createContext, useContext, useState, type FormEvent, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -8,11 +8,13 @@ import {
   ArrowDownLeft, ArrowLeft, ArrowRight, BadgeCheck, BookOpen, Check,
   CheckCircle2, ChevronRight, CircleHelp, CreditCard, Heart,
   Home as HomeIcon, Mail, MessageCircle, ShieldCheck, Sparkles, UserRound,
-  Wallet as WalletIcon, type LucideIcon,
+  Wallet as WalletIcon, LogOut, type LucideIcon,
 } from 'lucide-react';
 import { Link, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
+import { Login, Register, type DemoProfile } from '@/components/auth-gate';
 
 const queryClient = new QueryClient();
+const DemoSessionContext = createContext<{ logout: () => void }>({ logout: () => undefined });
 
 type Section = { title: string; detail: string; href: string; icon: LucideIcon; tone: string; };
 const sections: Section[] = [
@@ -25,10 +27,14 @@ const sections: Section[] = [
 ];
 
 function Topbar() {
+  const { logout } = useContext(DemoSessionContext);
   return <header className="topbar">
     <Link href="/" className="brand-mark" aria-label="Gvan home" data-testid="link-brand-home">gvan<span>.</span></Link>
-    <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[.045] px-3 py-2 text-xs text-[#e9cce5]" data-testid="status-demo-mode">
-      <span className="h-1.5 w-1.5 rounded-full bg-[#ff82d8] shadow-[0_0_9px_#ff82d8]" /> Demo space
+    <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[.045] px-3 py-2 text-xs text-[#e9cce5]" data-testid="status-demo-mode">
+        <span className="h-1.5 w-1.5 rounded-full bg-[#ff82d8] shadow-[0_0_9px_#ff82d8]" /> Demo space
+      </div>
+      <button type="button" onClick={logout} className="dashboard-logout" aria-label="Log out" data-testid="button-logout"><LogOut size={15} /><span>Log out</span></button>
     </div>
   </header>;
 }
@@ -234,7 +240,37 @@ function ContactUs() {
 }
 
 function Router() {
-  return <RoutedErrorBoundary><Switch>
+  const [location, setLocation] = useLocation();
+  const [profile, setProfile] = useState<DemoProfile | null>(() => {
+    try {
+      const stored = localStorage.getItem('gvan-demo-session');
+      return stored ? JSON.parse(stored) as DemoProfile : null;
+    } catch {
+      localStorage.removeItem('gvan-demo-session');
+      return null;
+    }
+  });
+  const authenticate = (nextProfile: DemoProfile) => {
+    setProfile(nextProfile);
+    localStorage.setItem('gvan-demo-session', JSON.stringify(nextProfile));
+    localStorage.setItem('gvan-demo-profile', JSON.stringify(nextProfile));
+  };
+  const logout = () => {
+    setProfile(null);
+    localStorage.removeItem('gvan-demo-session');
+    setLocation('/login');
+  };
+  if (!profile) {
+    return <DemoSessionContext.Provider value={{ logout }}>
+      {location === '/register'
+        ? <Register onAuthenticated={authenticate} />
+        : <Login onAuthenticated={authenticate} />}
+    </DemoSessionContext.Provider>;
+  }
+  if (location === '/login' || location === '/register') {
+    return <DemoSessionContext.Provider value={{ logout }}><Home /></DemoSessionContext.Provider>;
+  }
+  return <DemoSessionContext.Provider value={{ logout }}><RoutedErrorBoundary><Switch>
     <Route path="/" component={Home} />
     <Route path="/identity" component={Identity} />
     <Route path="/how-to-use" component={HowToUse} />
@@ -243,7 +279,7 @@ function Router() {
     <Route path="/wallet" component={Wallet} />
     <Route path="/contact-us" component={ContactUs} />
     <Route component={NotFound} />
-  </Switch></RoutedErrorBoundary>;
+  </Switch></RoutedErrorBoundary></DemoSessionContext.Provider>;
 }
 
 function RoutedErrorBoundary({ children }: { children: ReactNode }) {
