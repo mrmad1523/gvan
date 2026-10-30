@@ -11,7 +11,7 @@ import {
   Wallet as WalletIcon, LogOut, type LucideIcon,
 } from 'lucide-react';
 import { Link, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
-import { Login, Register, type DemoProfile } from '@/components/auth-gate';
+import { ForgotPassword, Login, Register, type DemoProfile } from '@/components/auth-gate';
 
 const queryClient = new QueryClient();
 const DemoSessionContext = createContext<{ logout: () => void }>({ logout: () => undefined });
@@ -264,6 +264,8 @@ function Router() {
     return <DemoSessionContext.Provider value={{ logout }}>
       {location === '/register'
         ? <Register onAuthenticated={authenticate} />
+        : location === '/forgot-password'
+          ? <ForgotPassword />
         : <Login onAuthenticated={authenticate} />}
     </DemoSessionContext.Provider>;
   }

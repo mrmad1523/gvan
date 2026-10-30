@@ -16,6 +16,7 @@ const loginSchema = z.object({
   email: emailRule,
   password: z.string().min(1, "Enter your password."),
 });
+const forgotPasswordSchema = z.object({ email: emailRule });
 const registerSchema = z.object({
   fullName: z.string().trim().min(2, "Enter your full name."),
   email: emailRule,
@@ -106,12 +107,49 @@ export function Login({ onAuthenticated }: AuthProps) {
             <FormControl><PasswordInput field={field} testId="input-login-password" /></FormControl>
             <FormMessage className="auth-error" data-testid="error-login-password" />
           </FormItem>} />
+          <Link href="/forgot-password" className="auth-forgot-link" data-testid="link-forgot-password">Forgot Password?</Link>
           <p className="auth-demo-note" role="note" data-testid="notice-demo-auth">Demo only; not secure authentication. Your password is never saved or sent.</p>
           <Button type="submit" className="auth-submit" data-testid="button-login-submit" disabled={form.formState.isSubmitting}>
             Login <ArrowRight size={18} aria-hidden="true" />
           </Button>
         </form>
       </Form>
+    </section>
+  </AuthBackdrop>;
+}
+
+export function ForgotPassword() {
+  const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
+  const form = useForm<z.infer<typeof forgotPasswordSchema>>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: { email: "" },
+    mode: "onTouched",
+  });
+  const submit = (values: z.infer<typeof forgotPasswordSchema>) => {
+    setSubmittedEmail(values.email.trim());
+  };
+
+  return <AuthBackdrop>
+    <section className="auth-card auth-forgot-card" aria-labelledby="forgot-password-title" data-testid="panel-forgot-password">
+      <h2 id="forgot-password-title">Forgot Password?</h2>
+      <p className="auth-forgot-intro">Enter the email address linked to your account.</p>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(submit)} className="auth-form" noValidate data-testid="form-forgot-password">
+          <FormField control={form.control} name="email" render={({ field }) => <FormItem className="auth-field">
+            <FormLabel>Email address</FormLabel>
+            <FormControl><div className="auth-input-wrap"><Mail className="auth-input-icon" size={19} aria-hidden="true" /><Input {...field} id="forgot-password-email" type="email" inputMode="email" autoComplete="email" placeholder="you@example.com" className="auth-input" data-testid="input-forgot-password-email" /></div></FormControl>
+            <FormMessage className="auth-error" data-testid="error-forgot-password-email" />
+          </FormItem>} />
+          <p className="auth-demo-note" role="note" data-testid="notice-forgot-password">Demo only. No real password-reset email will be sent.</p>
+          <Button type="submit" className="auth-submit" data-testid="button-reset-password" disabled={form.formState.isSubmitting}>
+            Reset Password <ArrowRight size={18} aria-hidden="true" />
+          </Button>
+        </form>
+      </Form>
+      {submittedEmail && <p className="auth-reset-success" role="status" data-testid="status-reset-password">
+        Demo reset flow complete for {submittedEmail}. No real password-reset email was sent.
+      </p>}
+      <p className="auth-bottom-prompt"><Link href="/login" data-testid="link-forgot-password-login">Back to Login</Link></p>
     </section>
   </AuthBackdrop>;
 }

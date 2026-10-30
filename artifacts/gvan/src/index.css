@@ -641,6 +641,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   clip:rect(0,0,0,0); white-space:nowrap; border:0;
 }
 .auth-card-login .auth-form { gap:13px; }
+.auth-forgot-link {
+  align-self:flex-end; margin-top:-7px; margin-bottom:-2px; color:#ff66cb;
+  font-size:12px; font-weight:600; line-height:16px; text-decoration:none;
+}
+.auth-forgot-link:hover { color:#ffd0f0; text-decoration:underline; }
+.auth-forgot-card h2 { margin-bottom:8px; }
+.auth-forgot-intro { margin:0 0 18px; color:#c9b0cf; text-align:center; font-size:12px; line-height:1.5; }
+.auth-reset-success {
+  margin-top:14px; padding:11px 12px; border:1px solid rgba(255,171,226,.25); border-radius:12px;
+  color:#f6d9ef; background:rgba(255,255,255,.055); font-size:11px; line-height:1.55; text-align:center;
+}
 .auth-card-login .auth-input { height:58px; border-radius:15px; font-size:14px; }
 .auth-card-login .auth-demo-note { padding:7px 10px; border:0; background:rgba(18,5,23,.42); text-align:center; font-size:9px; }
 .auth-card-login .auth-submit { min-height:58px; margin-top:1px; border-radius:18px; font-size:17px; }
