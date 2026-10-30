@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ArrowRight, Crown, Eye, EyeOff, Heart, LockKeyhole, Mail, UserRound } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import romanceImage from "@assets/generated_images/gvan-auth-romance.jpg";
+import romanceImage from "@assets/0_1000245933_1793321089914.png";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -31,7 +31,6 @@ type AuthProps = { onAuthenticated: (profile: DemoProfile) => void };
 function AuthBackdrop({ children, register = false }: { children: ReactNode; register?: boolean }) {
   return <div className={`auth-page ${register ? "auth-page-register" : ""}`} style={{ "--auth-photo": `url("${romanceImage}")` } as CSSProperties}>
     <div className="auth-photo" aria-hidden="true" />
-    <div className="auth-vignette" aria-hidden="true" />
     <main className="auth-layout">
       <div className="auth-visual-copy" aria-hidden="true">
         {!register && <div className="auth-wordmark-lockup">
