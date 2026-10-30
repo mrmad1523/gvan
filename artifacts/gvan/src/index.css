@@ -556,6 +556,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .auth-input::placeholder { color:#a88eae; opacity:1; }
 .auth-input:focus-visible { outline:0; border-color:#f26bc9; background:rgba(24,8,32,.95); box-shadow:0 0 0 3px rgba(239,79,195,.15); }
 .auth-input[aria-invalid="true"] { border-color:#ff8fae; }
+.auth-native-select {
+  appearance:none; -webkit-appearance:none; cursor:pointer; padding-right:44px;
+}
+.auth-native-select:invalid { color:#a88eae; }
+.auth-native-select option { color:#fff; background:#1b0a24; }
+.auth-select-chevron { position:absolute; right:14px; color:#e78acb; pointer-events:none; }
 .auth-password-input { padding-right:48px; }
 .auth-eye-button {
   position:absolute; right:8px; display:grid; place-items:center; width:36px; height:36px;
@@ -587,6 +593,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .auth-card-register { padding-top:25px; }
 .auth-card-register .auth-card-subtitle { margin-bottom:17px; }
 .auth-page-register .auth-footer { padding-top:12px; }
+.auth-page-register { overflow:visible; }
 @media (min-width:700px) {
   .dashboard-logout { min-height:38px; padding-inline:13px; font-size:12px; }
   .auth-page { align-items:center; padding:30px; }

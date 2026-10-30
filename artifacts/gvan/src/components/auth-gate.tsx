@@ -2,15 +2,16 @@ import { useState, type CSSProperties, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowRight, Crown, Eye, EyeOff, Heart, LockKeyhole, Mail, UserRound } from "lucide-react";
+import { ArrowRight, CalendarDays, ChevronDown, Crown, Eye, EyeOff, Heart, LockKeyhole, Mail, UserRound, VenusAndMars } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import romanceImage from "@assets/0_1000245933_1793321089914.png";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-export type DemoProfile = { fullName: string; email: string };
+export type DemoProfile = { fullName: string; email: string; age?: number; gender?: string };
 const emailRule = z.string().trim().email("Enter a valid email address.");
+const genderOptions = ["Male", "Female", "Other", "Prefer not to say"] as const;
 const loginSchema = z.object({
   email: emailRule,
   password: z.string().min(1, "Enter your password."),
@@ -20,6 +21,13 @@ const registerSchema = z.object({
   email: emailRule,
   password: z.string().min(8, "Use at least 8 characters."),
   confirmPassword: z.string().min(1, "Confirm your password."),
+  age: z.string().trim()
+    .min(1, "Enter your age.")
+    .regex(/^\d+$/, "Enter a whole-number age.")
+    .refine(value => Number(value) >= 18, "You must be 18 or older to register.")
+    .refine(value => Number(value) <= 120, "Enter an age no greater than 120."),
+  gender: z.string().min(1, "Select your gender.")
+    .refine(value => (genderOptions as readonly string[]).includes(value), "Select a valid gender."),
 }).superRefine((values, context) => {
   if (values.password !== values.confirmPassword) {
     context.addIssue({ code: z.ZodIssueCode.custom, message: "Passwords do not match.", path: ["confirmPassword"] });
@@ -65,13 +73,17 @@ export function Login({ onAuthenticated }: AuthProps) {
     mode: "onTouched",
   });
   const submit = (values: z.infer<typeof loginSchema>) => {
-    const savedName = localStorage.getItem("gvan-demo-profile");
+    const savedProfile = localStorage.getItem("gvan-demo-profile");
     let fullName = values.email.split("@")[0].replace(/[._-]+/g, " ").trim();
+    let matchedProfile: DemoProfile | null = null;
     try {
-      const parsed = savedName ? JSON.parse(savedName) as DemoProfile : null;
-      if (parsed?.email === values.email.trim()) fullName = parsed.fullName;
+      const parsed = savedProfile ? JSON.parse(savedProfile) as DemoProfile : null;
+      if (parsed?.email === values.email.trim()) {
+        matchedProfile = parsed;
+        fullName = parsed.fullName;
+      }
     } catch { /* A malformed local demo profile is ignored. */ }
-    onAuthenticated({ fullName: fullName || "Friend", email: values.email.trim() });
+    onAuthenticated({ ...matchedProfile, fullName: fullName || "Friend", email: values.email.trim() });
     setLocation("/");
   };
 
@@ -108,11 +120,16 @@ export function Register({ onAuthenticated }: AuthProps) {
   const [, setLocation] = useLocation();
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { fullName: "", email: "", password: "", confirmPassword: "" },
+    defaultValues: { fullName: "", email: "", password: "", confirmPassword: "", age: "", gender: "" },
     mode: "onTouched",
   });
   const submit = (values: z.infer<typeof registerSchema>) => {
-    const profile = { fullName: values.fullName.trim(), email: values.email.trim() };
+    const profile: DemoProfile = {
+      fullName: values.fullName.trim(),
+      email: values.email.trim(),
+      age: Number(values.age),
+      gender: values.gender,
+    };
     localStorage.setItem("gvan-demo-profile", JSON.stringify(profile));
     onAuthenticated(profile);
     setLocation("/");
@@ -146,7 +163,24 @@ export function Register({ onAuthenticated }: AuthProps) {
             <FormControl><PasswordInput field={field} testId="input-register-confirm-password" placeholder="Re-enter your password" /></FormControl>
             <FormMessage className="auth-error" data-testid="error-register-confirm-password" />
           </FormItem>} />
-          <p className="auth-demo-note" role="note" data-testid="notice-demo-register">Demo only — not secure authentication. Only your name and email are kept in this browser; your password is never saved or sent.</p>
+          <FormField control={form.control} name="age" render={({ field }) => <FormItem className="auth-field">
+            <FormLabel>Age</FormLabel>
+            <FormControl><div className="auth-input-wrap"><CalendarDays className="auth-input-icon" size={19} aria-hidden="true" /><Input {...field} id="register-age" type="number" inputMode="numeric" min={18} max={120} step={1} placeholder="Enter your age" className="auth-input" data-testid="input-register-age" /></div></FormControl>
+            <FormMessage className="auth-error" data-testid="error-register-age" />
+          </FormItem>} />
+          <FormField control={form.control} name="gender" render={({ field }) => <FormItem className="auth-field">
+            <FormLabel>Gender</FormLabel>
+            <FormControl><div className="auth-input-wrap">
+              <VenusAndMars className="auth-input-icon" size={19} aria-hidden="true" />
+              <select {...field} id="register-gender" className="auth-input auth-native-select" data-testid="input-register-gender">
+                <option value="" disabled>Select gender</option>
+                {genderOptions.map(option => <option key={option} value={option}>{option}</option>)}
+              </select>
+              <ChevronDown className="auth-select-chevron" size={19} aria-hidden="true" />
+            </div></FormControl>
+            <FormMessage className="auth-error" data-testid="error-register-gender" />
+          </FormItem>} />
+          <p className="auth-demo-note" role="note" data-testid="notice-demo-register">Demo only — not secure authentication. Registration details are kept in this browser; your password is never saved or sent.</p>
           <Button type="submit" className="auth-submit" data-testid="button-register-submit" disabled={form.formState.isSubmitting}>
             Create my space <ArrowRight size={18} aria-hidden="true" />
           </Button>
