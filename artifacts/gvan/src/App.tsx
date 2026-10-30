@@ -8,7 +8,7 @@ import {
   ArrowDownLeft, ArrowLeft, ArrowRight, BadgeCheck, BookOpen, Check,
   CheckCircle2, ChevronRight, CircleHelp, CreditCard, Heart,
   Home as HomeIcon, Mail, MessageCircle, ShieldCheck, Sparkles, UserRound,
-  Wallet as WalletIcon, LogOut, type LucideIcon,
+  Wallet as WalletIcon, LogOut, type LucideIcon, Menu, Search, Bell, X,
 } from 'lucide-react';
 import { Link, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 import { ForgotPassword, Login, Register, type DemoProfile } from '@/components/auth-gate';
@@ -16,26 +16,43 @@ import { ForgotPassword, Login, Register, type DemoProfile } from '@/components/
 const queryClient = new QueryClient();
 const DemoSessionContext = createContext<{ logout: () => void }>({ logout: () => undefined });
 
-type Section = { title: string; detail: string; href: string; icon: LucideIcon; tone: string; };
+type Section = { title: string; href: string; art: string; };
 const sections: Section[] = [
-  { title: 'My identity', detail: 'Your profile, your way', href: '/identity', icon: UserRound, tone: 'pink' },
-  { title: 'How to use', detail: 'A quick little guide', href: '/how-to-use', icon: BookOpen, tone: 'violet' },
-  { title: 'Community rules', detail: 'A kinder space together', href: '/rules', icon: ShieldCheck, tone: 'rose' },
-  { title: 'Weekly challenge', detail: 'One small thing, each week', href: '/weekly-challenge', icon: Sparkles, tone: 'gold' },
-  { title: 'My wallet', detail: 'Demo balance & activity', href: '/wallet', icon: WalletIcon, tone: 'lilac' },
-  { title: 'Contact us', detail: 'We’re here to listen', href: '/contact-us', icon: MessageCircle, tone: 'coral' },
+  { title: 'Identity', href: '/identity', art: '/gvan-art/identity.png' },
+  { title: 'How to Use', href: '/how-to-use', art: '/gvan-art/how-to-use.png' },
+  { title: 'Rules', href: '/rules', art: '/gvan-art/rules.png' },
+  { title: 'Weekly Challenge', href: '/weekly-challenge', art: '/gvan-art/weekly-challenge.png' },
+  { title: 'Wallet', href: '/wallet', art: '/gvan-art/wallet.png' },
+  { title: 'Contact Us', href: '/contact-us', art: '/gvan-art/contact-us.png' },
 ];
 
 function Topbar() {
   const { logout } = useContext(DemoSessionContext);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [noticeOpen, setNoticeOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const matches = sections.filter(({ title }) => title.toLowerCase().includes(query.trim().toLowerCase()));
   return <header className="topbar">
-    <Link href="/" className="brand-mark" aria-label="Gvan home" data-testid="link-brand-home">gvan<span>.</span></Link>
-    <div className="flex items-center gap-2">
-      <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[.045] px-3 py-2 text-xs text-[#e9cce5]" data-testid="status-demo-mode">
-        <span className="h-1.5 w-1.5 rounded-full bg-[#ff82d8] shadow-[0_0_9px_#ff82d8]" /> Demo space
-      </div>
-      <button type="button" onClick={logout} className="dashboard-logout" aria-label="Log out" data-testid="button-logout"><LogOut size={15} /><span>Log out</span></button>
+    <button type="button" className="utility-button" aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen} onClick={() => { setMenuOpen(!menuOpen); setSearchOpen(false); setNoticeOpen(false); }} data-testid="button-menu">
+      {menuOpen ? <X /> : <Menu />}
+    </button>
+    <Link href="/" className="brand-mark" aria-label="Gvan home" data-testid="link-brand-home">Gvan<span className="brand-heart">♥</span></Link>
+    <div className="topbar-actions">
+      <button type="button" className="utility-button" aria-label="Search sections" aria-expanded={searchOpen} onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false); setNoticeOpen(false); }} data-testid="button-search"><Search /></button>
+      <button type="button" className="utility-button" aria-label="Notifications" aria-expanded={noticeOpen} onClick={() => { setNoticeOpen(!noticeOpen); setMenuOpen(false); setSearchOpen(false); }} data-testid="button-notifications"><Bell /><span className="notification-dot" /></button>
     </div>
+    {menuOpen && <div className="header-popover menu-popover" data-testid="panel-menu">
+      <p className="popover-heading">Your Gvan space</p>
+      {sections.map(section => <Link key={section.href} href={section.href} onClick={() => setMenuOpen(false)} data-testid={`menu-link-${section.href.slice(1)}`}>{section.title}<ChevronRight size={16} /></Link>)}
+      <button type="button" className="menu-logout" onClick={logout} data-testid="button-logout"><LogOut size={16} /> Log out</button>
+    </div>}
+    {searchOpen && <div className="header-popover search-popover" data-testid="panel-search">
+      <label htmlFor="dashboard-search">Find a section</label>
+      <div className="search-field-wrap"><Search size={17} /><input id="dashboard-search" autoFocus value={query} onChange={event => setQuery(event.target.value)} placeholder="Try “wallet”" data-testid="input-search-sections" /></div>
+      <div className="search-results">{matches.length ? matches.map(section => <Link key={section.href} href={section.href} onClick={() => { setSearchOpen(false); setQuery(''); }} data-testid={`search-result-${section.href.slice(1)}`}>{section.title}<ArrowRight size={15} /></Link>) : <p>No matching sections yet.</p>}</div>
+    </div>}
+    {noticeOpen && <div className="header-popover notice-popover" data-testid="panel-notifications"><span className="notice-heart">♥</span><div><strong>All caught up</strong><p>Your Gvan updates will appear here.</p></div></div>}
   </header>;
 }
 
@@ -45,7 +62,7 @@ function BottomNav() {
     { href: '/', label: 'Home', icon: HomeIcon },
     { href: '/weekly-challenge', label: 'Challenge', icon: Sparkles },
     { href: '/wallet', label: 'Wallet', icon: WalletIcon },
-    { href: '/contact-us', label: 'Contact', icon: MessageCircle },
+    { href: '/identity', label: 'Profile', icon: UserRound },
   ];
   return <nav className="bottom-nav" aria-label="Primary navigation" data-testid="navigation-primary">
     <div className="nav-inner">{nav.map(({ href, label, icon: Icon }) =>
@@ -76,41 +93,12 @@ function PageIntro({ kicker, title, description, icon: Icon }: { kicker: string;
 
 function Home() {
   return <Shell>
-    <section className="mb-8 mt-2 overflow-hidden rounded-[28px] border border-[#ff89dc]/35 bg-[linear-gradient(125deg,rgba(175,53,140,.76),rgba(85,49,124,.8)_60%,rgba(57,34,84,.9))] p-6 shadow-[0_18px_48px_rgba(13,3,20,.32)] sm:p-8" data-testid="card-welcome">
-      <div className="relative z-[1] flex items-start justify-between gap-4">
-        <div>
-          <div className="eyebrow mb-3">Your space, your pace</div>
-          <h1 className="max-w-[450px] font-[var(--app-font-serif)] text-[clamp(34px,9vw,51px)] font-extrabold leading-[1.02] tracking-[-1.8px]">A little closer<br />to what matters.</h1>
-          <p className="mt-4 max-w-sm text-sm leading-6 text-[#f2dced]">Good to see you, Alex. Your Gvan home is ready when you are.</p>
-          <Link href="/identity" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-white hover:text-[#ffd0f1]" data-testid="link-view-identity">View your identity <ArrowRight size={16} /></Link>
-        </div>
-        <div aria-hidden="true" className="mt-1 grid h-[66px] w-[66px] shrink-0 place-items-center rounded-[22px] border border-white/20 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,.3)] sm:h-[88px] sm:w-[88px]">
-          <Heart size={34} strokeWidth={1.35} className="text-[#ffd6f2] drop-shadow-[0_0_14px_rgba(255,91,204,.8)] sm:h-11 sm:w-11" />
-        </div>
-      </div>
-      <div className="mt-7 flex items-center gap-2 border-t border-white/15 pt-4 text-xs text-[#f4dcee]"><Sparkles size={14} className="text-[#ffc5ed]" /> A small space for the things you care about.</div>
-    </section>
-
-    <div className="mb-4 flex items-end justify-between">
-      <div><div className="eyebrow mb-1">Your shortcuts</div><h2 className="font-[var(--app-font-serif)] text-[23px] font-bold tracking-[-.5px]">Everything in one place</h2></div>
-      <span className="pb-1 text-xs text-[#bca8c4]">6 sections</span>
-    </div>
-    <div className="grid grid-cols-2 gap-3 sm:gap-4" data-testid="grid-sections">
-      {sections.map(({ title, detail, href, icon: Icon, tone }, index) =>
-        <Link key={href} href={href} className={`glass-card tile-card glow-card min-h-[146px] p-4 sm:min-h-[166px] sm:p-5 tone-${tone}`} data-testid={`card-section-${href.slice(1)}`}>
-          <div className="mb-5 flex items-center justify-between">
-            <span className="grid h-10 w-10 place-items-center rounded-[14px] border border-white/10 bg-white/[.09] text-[#ffb5e9]"><Icon size={20} aria-hidden="true" /></span>
-            <span className="text-[10px] font-semibold tracking-[.15em] text-white/45">0{index + 1}</span>
-          </div>
-          <h3 className="font-[var(--app-font-serif)] text-[17px] font-bold leading-tight">{title}</h3>
-          <p className="mt-1.5 text-xs leading-5 text-[#cbb7d2]">{detail}</p>
-          <ChevronRight size={16} className="absolute bottom-4 right-4 text-[#ff9fdf]" aria-hidden="true" />
+    <div className="dashboard-heading"><p>YOUR SPACE, YOUR PACE</p><span aria-hidden="true">♥</span></div>
+    <div className="grid grid-cols-2 gap-[10px] sm:gap-3" data-testid="grid-sections">
+      {sections.map(({ title, href, art }) =>
+        <Link key={href} href={href} className="art-card" aria-label={title} data-testid={`card-section-${href.slice(1)}`}>
+          <img src={art} alt={title} loading="eager" data-testid={`image-section-${href.slice(1)}`} />
         </Link>)}
-    </div>
-    <div className="glass-card mt-5 flex items-center justify-between gap-4 p-4" data-testid="card-weekly-prompt">
-      <div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-full bg-[#ee83ce]/15 text-[#ffb5e8]"><Heart size={18} /></span>
-        <div><p className="text-sm font-bold">A moment for you</p><p className="mt-1 text-xs text-muted">This week’s gentle challenge is waiting.</p></div>
-      </div><Link href="/weekly-challenge" aria-label="Open this week's challenge" className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[.06]" data-testid="link-open-challenge"><ArrowRight size={17} /></Link>
     </div>
   </Shell>;
 }
