@@ -2,7 +2,7 @@ import { useState, type CSSProperties, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowRight, CalendarDays, ChevronDown, Crown, Eye, EyeOff, Heart, LockKeyhole, Mail, UserRound, VenusAndMars } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, ChevronDown, Crown, Eye, EyeOff, Heart, LockKeyhole, Mail, UserRound, VenusAndMars } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import romanceImage from "@assets/0_1000245933_1793321089914.png";
 import { Button } from "@/components/ui/button";
@@ -120,6 +120,7 @@ export function Login({ onAuthenticated }: AuthProps) {
 
 export function ForgotPassword() {
   const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
+  const [, setLocation] = useLocation();
   const form = useForm<z.infer<typeof forgotPasswordSchema>>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: "" },
@@ -131,25 +132,28 @@ export function ForgotPassword() {
 
   return <AuthBackdrop>
     <section className="auth-card auth-forgot-card" aria-labelledby="forgot-password-title" data-testid="panel-forgot-password">
-      <h2 id="forgot-password-title">Forgot Password?</h2>
-      <p className="auth-forgot-intro">Enter the email address linked to your account.</p>
-      <Form {...form}>
+      <h2 id="forgot-password-title">Reset Your Password</h2>
+      <p className="auth-forgot-intro">Enter your registered email address.</p>
+      {submittedEmail ? <div className="auth-reset-confirmation" role="status" aria-live="polite" data-testid="status-reset-password">
+        <CheckCircle2 size={32} aria-hidden="true" />
+        <p className="auth-reset-success">Password reset instructions have been sent to your email.</p>
+        <p className="auth-demo-note" data-testid="notice-forgot-password">Demo only — no real email was sent, and your password was not changed.</p>
+      </div> : <Form {...form}>
         <form onSubmit={form.handleSubmit(submit)} className="auth-form" noValidate data-testid="form-forgot-password">
           <FormField control={form.control} name="email" render={({ field }) => <FormItem className="auth-field">
             <FormLabel>Email address</FormLabel>
             <FormControl><div className="auth-input-wrap"><Mail className="auth-input-icon" size={19} aria-hidden="true" /><Input {...field} id="forgot-password-email" type="email" inputMode="email" autoComplete="email" placeholder="you@example.com" className="auth-input" data-testid="input-forgot-password-email" /></div></FormControl>
             <FormMessage className="auth-error" data-testid="error-forgot-password-email" />
           </FormItem>} />
-          <p className="auth-demo-note" role="note" data-testid="notice-forgot-password">Demo only. No real password-reset email will be sent.</p>
+          <p className="auth-demo-note" role="note" data-testid="notice-forgot-password">Demo only. No real email is sent.</p>
           <Button type="submit" className="auth-submit" data-testid="button-reset-password" disabled={form.formState.isSubmitting}>
-            Reset Password <ArrowRight size={18} aria-hidden="true" />
+            Send Reset Link <ArrowRight size={18} aria-hidden="true" />
           </Button>
         </form>
-      </Form>
-      {submittedEmail && <p className="auth-reset-success" role="status" data-testid="status-reset-password">
-        Demo reset flow complete for {submittedEmail}. No real password-reset email was sent.
-      </p>}
-      <p className="auth-bottom-prompt"><Link href="/login" data-testid="link-forgot-password-login">Back to Login</Link></p>
+      </Form>}
+      <button type="button" className="auth-reset-back" onClick={() => setLocation("/login")} data-testid="button-forgot-password-back">
+        <ArrowLeft size={16} aria-hidden="true" /> Back to Login
+      </button>
     </section>
   </AuthBackdrop>;
 }

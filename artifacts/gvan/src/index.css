@@ -649,9 +649,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .auth-forgot-card h2 { margin-bottom:8px; }
 .auth-forgot-intro { margin:0 0 18px; color:#c9b0cf; text-align:center; font-size:12px; line-height:1.5; }
 .auth-reset-success {
-  margin-top:14px; padding:11px 12px; border:1px solid rgba(255,171,226,.25); border-radius:12px;
-  color:#f6d9ef; background:rgba(255,255,255,.055); font-size:11px; line-height:1.55; text-align:center;
+  margin:0; padding:11px 12px; border:1px solid rgba(255,171,226,.25); border-radius:12px;
+  color:#f6d9ef; background:rgba(255,255,255,.055); font-size:12px; line-height:1.55; text-align:center;
 }
+.auth-reset-confirmation { display:flex; flex-direction:column; align-items:center; gap:12px; color:#ff9de1; }
+.auth-reset-confirmation .auth-demo-note { width:100%; margin:0; text-align:center; }
+.auth-reset-back {
+  display:flex; align-items:center; justify-content:center; gap:8px; width:100%; min-height:46px; margin-top:15px;
+  border:1px solid rgba(255,142,221,.34); border-radius:14px; color:#f6d9ef;
+  background:rgba(255,255,255,.055); font-size:13px; font-weight:700;
+  transition:background .18s ease,border-color .18s ease;
+}
+.auth-reset-back:hover { border-color:rgba(255,142,221,.6); background:rgba(255,255,255,.095); }
+.auth-reset-back:focus-visible { outline:2px solid #ff66cb; outline-offset:2px; }
 .auth-card-login .auth-input { height:58px; border-radius:15px; font-size:14px; }
 .auth-card-login .auth-demo-note { padding:7px 10px; border:0; background:rgba(18,5,23,.42); text-align:center; font-size:9px; }
 .auth-card-login .auth-submit { min-height:58px; margin-top:1px; border-radius:18px; font-size:17px; }
